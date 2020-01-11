@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ShoppingCart.Shared.Products
 {
-    public interface IProductRepository : IAsyncCRUDRepository<ProductsDto>
+    public interface IProductRepository : IAsyncCRUDRepository<ProductDto>
     {
     }
 }

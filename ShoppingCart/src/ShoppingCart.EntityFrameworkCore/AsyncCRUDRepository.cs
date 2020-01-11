@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ShoppingCart.Shared;
+using ShoppingCart.Shared.Exceptions;
 
 namespace ShoppingCart.EntityFrameworkCore
 {
@@ -54,9 +55,10 @@ namespace ShoppingCart.EntityFrameworkCore
 
             await _dbSet.AddAsync(entity);
             await _shoppingCartDbContext.SaveChangesAsync();
+            entityDto.Id = entity.Id;
         }
 
-        public virtual async Task Update(TEntityDto entityDto)
+        public virtual async Task UpdateAsync(TEntityDto entityDto)
         {
             if (entityDto == null)
             {
@@ -65,12 +67,17 @@ namespace ShoppingCart.EntityFrameworkCore
 
             var entity = await _dbSet.FindAsync(entityDto.Id);
 
+            if (entity == null)
+            {
+                throw new EntityNotFoundException();
+            }
+
             Mapper.Map(entityDto, entity);
 
             await _shoppingCartDbContext.SaveChangesAsync();
         }
 
-        public virtual async Task Delete(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id)
         {
             var entity = await _dbSet.FindAsync(id);
             _dbSet.Remove(entity);

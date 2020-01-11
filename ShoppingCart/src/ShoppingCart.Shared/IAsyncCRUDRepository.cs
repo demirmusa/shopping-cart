@@ -12,8 +12,8 @@ namespace ShoppingCart.Shared
 
         Task InsertAsync(TEntityDto entityDto);
 
-        Task Update(TEntityDto entityDto);
+        Task UpdateAsync(TEntityDto entityDto);
 
-        Task Delete(TPrimaryKey id);
+        Task DeleteAsync(TPrimaryKey id);
     }
 }

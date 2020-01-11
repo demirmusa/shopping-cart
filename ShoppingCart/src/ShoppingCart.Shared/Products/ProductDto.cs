@@ -1,6 +1,6 @@
 ﻿namespace ShoppingCart.Shared.Products
 {
-    public class ProductsDto : EntityDto
+    public class ProductDto : EntityDto
     {
         public string Title { get; set; }
 
