@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ShoppingCart.EntityFrameworkCore.Categories
 {
@@ -13,5 +12,16 @@ namespace ShoppingCart.EntityFrameworkCore.Categories
         public int? ParentCategoryId { get; set; }
 
         public virtual Category ParentCategory { get; set; }
+
+        public Category(string title)
+        {
+            Title = title;
+        }
+
+        public Category(string title, int? parentCategoryId)
+        {
+            Title = title;
+            ParentCategoryId = parentCategoryId;
+        }
     }
 }

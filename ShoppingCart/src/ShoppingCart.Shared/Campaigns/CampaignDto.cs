@@ -10,8 +10,12 @@
 
         public DiscountType DiscountType { get; set; }
 
-        public CampaignDto()
+        public CampaignDto(int categoryId, double discount, DiscountType discountType = DiscountType.Rate)
         {
+            CategoryId = categoryId;
+            Discount = discount;
+            DiscountType = discountType;
+
             IsActive = true;
         }
     }

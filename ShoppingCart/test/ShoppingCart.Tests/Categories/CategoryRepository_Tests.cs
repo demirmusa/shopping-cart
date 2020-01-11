@@ -10,6 +10,7 @@ namespace ShoppingCart.Tests.Categories
     public class CategoryRepository_Tests : ShoppingCartTestBase
     {
         private readonly ICategoryRepository _categoryRepository;
+
         public CategoryRepository_Tests()
         {
             _categoryRepository = ServiceProvider.GetRequiredService<ICategoryRepository>();
@@ -17,16 +18,13 @@ namespace ShoppingCart.Tests.Categories
 
         private async Task<CategoryDto> CreateCategory(string title, int? parentId)
         {
-            var dto = new CategoryDto()
-            {
-                Title = title,
-                ParentCategoryId = parentId
-            };
+            var dto = new CategoryDto(title, parentId);
+
             await _categoryRepository.InsertAsync(dto);
 
             var entityDto = await _categoryRepository.GetAsync(dto.Id);
-            entityDto.Id.ShouldNotBeNull();
             entityDto.ShouldNotBeNull();
+            entityDto.Id.ShouldNotBe(0);
             entityDto.Title.ShouldBe(dto.Title);
             entityDto.ParentCategoryId.ShouldBe(dto.ParentCategoryId);
 
@@ -36,11 +34,12 @@ namespace ShoppingCart.Tests.Categories
         [Theory]
         [InlineData(null, null, true, typeof(ArgumentNullException))]//title is required, should throw exception
         [InlineData("", null, true, typeof(ArgumentNullException))]//title can not be null or empty
+        [InlineData(" ", null, true, typeof(ArgumentNullException))]//title can not be null or empty
         [InlineData(null, int.MaxValue, true, typeof(ArgumentNullException))]//there is category with given parent id, should throw exception
-        [InlineData("Cars", int.MaxValue, true, null)]//there is no category with given parent id, should throw exception
-        [InlineData("Cars", 0, true, null)]//there is no category with given parent id, should throw exception
-        [InlineData("Cars", null, false, null)]
-        public async Task Should_Insert_Category(string title, int? parentId, bool shouldThrowException, Type exceptionType)
+        [InlineData("Cars", int.MaxValue, true, null, "FOREIGN KEY constraint failed")]//there is no category with given parent id, should throw exception
+        [InlineData("Cars", 0, true, null, "FOREIGN KEY constraint failed")]//there is no category with given parent id, should throw exception
+        [InlineData("Cars", null, false)]
+        public async Task Can_Insert_Theory(string title, int? parentId, bool shouldThrowException, Type exceptionType = null, string exceptionMessage = null)
         {
             if (shouldThrowException)
             {
@@ -49,23 +48,15 @@ namespace ShoppingCart.Tests.Categories
                     await Assert.ThrowsAsync(exceptionType,
                         async () =>
                         {
-                            await _categoryRepository.InsertAsync(new CategoryDto()
-                            {
-                                Title = title,
-                                ParentCategoryId = parentId
-                            });
+                            await _categoryRepository.InsertAsync(new CategoryDto(title, parentId));
                         });
                 }
                 else
                 {
                     await ShouldThrowException(async () =>
                     {
-                        await _categoryRepository.InsertAsync(new CategoryDto()
-                        {
-                            Title = title,
-                            ParentCategoryId = parentId
-                        });
-                    });
+                        await _categoryRepository.InsertAsync(new CategoryDto(title, parentId));
+                    }, exceptionMessage);
                 }
             }
             else
@@ -84,11 +75,12 @@ namespace ShoppingCart.Tests.Categories
         [Theory]
         [InlineData(null, null, true, typeof(ArgumentNullException))]//title is required, should throw exception
         [InlineData("", null, true, typeof(ArgumentNullException))]//title can not be null or empty
+        [InlineData(" ", null, true, typeof(ArgumentNullException))]//title can not be null or empty
         [InlineData(null, int.MaxValue, true, typeof(ArgumentNullException))]//there is category with given parent id, should throw exception
-        [InlineData("Cars", int.MaxValue, true, null)]//there is no category with given parent id, should throw exception
-        [InlineData("Cars", 0, true, null)]//there is no category with given parent id, should throw exception
+        [InlineData("Cars", int.MaxValue, true, null, "FOREIGN KEY constraint failed")]//there is no category with given parent id, should throw exception
+        [InlineData("Cars", 0, true, null, "FOREIGN KEY constraint failed")]//there is no category with given parent id, should throw exception
         [InlineData("Cars", null, false, null)]
-        public async Task Should_Update_Category(string title, int? parentId, bool shouldThrowException, Type exceptionType)
+        public async Task Can_Update_Theory(string title, int? parentId, bool shouldThrowException, Type exceptionType = null, string exceptionMessage = null)
         {
             var category = await CreateCategory("Category1", null);
             category.Title = title;
@@ -109,7 +101,7 @@ namespace ShoppingCart.Tests.Categories
                     await ShouldThrowException(async () =>
                     {
                         await _categoryRepository.UpdateAsync(category);
-                    });
+                    }, exceptionMessage);
                 }
             }
             else
@@ -134,21 +126,21 @@ namespace ShoppingCart.Tests.Categories
         }
 
         [Fact]
-        public async Task Should_Delete_Category()
+        public async Task Test_Delete_Category()
         {
             var category = await CreateCategory("Category1", null);
 
             await ShouldThrowException(async () =>
             {
                 await _categoryRepository.DeleteAsync(0);
-            });
+            }, "Value cannot be null. (Parameter 'entity')");
 
             (await _categoryRepository.GetAsync(category.Id)).ShouldNotBeNull();
 
             await ShouldThrowException(async () =>
             {
                 await _categoryRepository.DeleteAsync(-1);
-            });
+            }, "Value cannot be null. (Parameter 'entity')");
 
             (await _categoryRepository.GetAsync(category.Id)).ShouldNotBeNull();
 

@@ -15,9 +15,10 @@ namespace ShoppingCart.Tests
         public ShoppingCartTestBase()
         {
             _services = new ServiceCollection();
+            _services.RegisterDataLayerForTest();
+
             PreInitialize(_services);
 
-            _services.RegisterDataLayerForTest();
             ServiceProvider = _services.BuildServiceProvider();
         }
 
@@ -39,7 +40,7 @@ namespace ShoppingCart.Tests
 
             _services.AddTransient(typeof(T), provider => substitute);
 
-            ServiceProvider = _services.BuildServiceProvider();
+            //ServiceProvider = _services.BuildServiceProvider();
             return substitute;
         }
 
@@ -52,7 +53,7 @@ namespace ShoppingCart.Tests
 
             _services.AddSingleton(typeof(T), provider => substitute);
 
-            ServiceProvider = _services.BuildServiceProvider();
+            //ServiceProvider = _services.BuildServiceProvider();
             return substitute;
         }
 
@@ -65,25 +66,35 @@ namespace ShoppingCart.Tests
 
             _services.AddScoped(typeof(T), provider => substitute);
 
-            ServiceProvider = _services.BuildServiceProvider();
+            //ServiceProvider = _services.BuildServiceProvider();
             return substitute;
         }
-        
-        protected async Task ShouldThrowException(Func<Task> func)
+
+        protected async Task ShouldThrowException(Func<Task> func, string exceptionMessage = null)
         {
-            bool exceptionNotThrown = false;
+            bool isExpectedExceptionNotThrown = false;
+            string message = "Should throw any kind of exception";
             try
             {
                 await func();
-                exceptionNotThrown = true;
+                isExpectedExceptionNotThrown = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                if (!string.IsNullOrWhiteSpace(exceptionMessage))
+                {
+                    string exMessage = e.Message + (e.InnerException != null ? e.InnerException.Message : "");
+                    if (!exMessage.Contains(exceptionMessage))
+                    {
+                        message = $"Should throw any kind of exception including expected exception message.\n Expected exception message: {exceptionMessage}\nReceived exception message: {exMessage}";
+                        isExpectedExceptionNotThrown = true;
+                    }
+                }
             }
 
-            if (exceptionNotThrown)
+            if (isExpectedExceptionNotThrown)
             {
-                throw new Exception("Should throw exception");
+                throw new Exception(message);
             }
         }
     }

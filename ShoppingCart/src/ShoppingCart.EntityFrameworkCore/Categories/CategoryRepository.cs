@@ -13,7 +13,7 @@ namespace ShoppingCart.EntityFrameworkCore.Categories
 
         public override Task InsertAsync(CategoryDto entityDto)
         {
-            if (string.IsNullOrEmpty(entityDto.Title))
+            if (string.IsNullOrWhiteSpace(entityDto.Title))
             {
                 throw new ArgumentNullException($"{nameof(entityDto.Title)} can not be null or empty");
             }
@@ -23,7 +23,7 @@ namespace ShoppingCart.EntityFrameworkCore.Categories
 
         public override Task UpdateAsync(CategoryDto entityDto)
         {
-            if (string.IsNullOrEmpty(entityDto.Title))
+            if (string.IsNullOrWhiteSpace(entityDto.Title))
             {
                 throw new ArgumentNullException($"{nameof(entityDto.Title)} can not be null or empty");
             }
