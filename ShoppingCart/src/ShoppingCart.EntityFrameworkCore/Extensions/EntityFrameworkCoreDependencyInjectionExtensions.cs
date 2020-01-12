@@ -22,7 +22,6 @@ namespace ShoppingCart.EntityFrameworkCore.Extensions
             AddServices(services);
         }
 
-        private const string TestConnectionString = "Data Source=:memory:";
         public static void RegisterDataLayerForTest(this IServiceCollection services)
         {
             RegisterInMemorySqlLite(services);
